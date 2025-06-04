@@ -8,6 +8,19 @@ This project demonstrates a 5-string bass guitar fretboard in React + TypeScript
 - Node.js (v18 or newer recommended)
 - npm (v9 or newer recommended)
 
+#### Node and NPM on Windows
+
+	1.	Open PowerShell and run:
+		```echo $env:PATH```
+	2.	Look for the Node.js path, e.g., ⁠`C:\Program Files\nodejs\.`	
+	3.	If missing, add it:
+		- Search "Environment Variables" in Windows search.	
+		- Open "Edit the system environment variables".
+		- Click "Environment Variables".	
+		- Under "System variables", select "Path" > `Edit` > `New`.	
+		- Add the Node.js installation path, e.g., `⁠C:\Program Files\nodejs\.`
+		- Click OK and restart terminal.
+
 ### Installation
 
 1. Clone this repository or download the source code.
