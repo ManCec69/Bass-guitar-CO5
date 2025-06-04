@@ -14,6 +14,12 @@ const KEYS = [
 	'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'Fb', 'G', 'G#/Ab', 'A', 'A#', 'B'
 ];
 
+// Helper to get the C major scale intervals (in semitones)
+const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11, 12];
+const NOTE_TO_SEMITONE: Record<string, number> = {
+	'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'Fb': 4, 'G': 7, 'G#/Ab': 8, 'A': 9, 'A#': 10, 'B': 11
+};
+
 function getNoteName(midi: number) {
 	const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 	const note = NOTES[midi % 12];
@@ -59,36 +65,24 @@ export default function App() {
 		if (!audioReady || !bassRef.current || !audioCtxRef.current) return;
 		if (selectedString === null) return;
 		await audioCtxRef.current.resume();
-		let scaleFrets: number[] = [];
-		let midiNotes: number[] = [];
-		if (selectedString === 4) {
-			// B string: C3, D3, E3, F3, G3, A3, B3, C4
-			scaleFrets = [1, 3, 5, 6, 8, 10, 12, 13];
-			midiNotes = scaleFrets.map(f => STRINGS[4].midi + f);
-		} else if (selectedString === 3) {
-			// E string: C4 (8), D4 (10), E4 (12), F4 (13), G3 (3), A3 (5), B3 (7), C4 (8)
-			scaleFrets = [8, 10, 12, 13, 3, 5, 7, 8];
-			midiNotes = scaleFrets.map(f => STRINGS[3].midi + f);
-		} else if (selectedString === 2) {
-			// A string: C3 (3), D3 (5), E3 (7), F3 (8), G3 (10), A3 (12), B3 (14), C4 (15)
-			scaleFrets = [3, 5, 7, 8, 10, 12, 14, 15];
-			midiNotes = scaleFrets.map(f => STRINGS[2].midi + f);
-		} else if (selectedString === 1) {
-			// D string: C4 (10), D4 (12), E4 (14), F4 (15), G4 (0), A4 (2), B4 (4), C5 (5)
-			scaleFrets = [10, 12, 14, 15, 0, 2, 4, 5];
-			midiNotes = scaleFrets.map(f => STRINGS[1].midi + f);
-		} else if (selectedString === 0) {
-			// G string: C4 (5), D4 (7), E4 (9), F4 (10), G4 (0), A4 (2), B4 (4), C5 (5)
-			scaleFrets = [5, 7, 9, 10, 0, 2, 4, 5];
-			midiNotes = scaleFrets.map(f => STRINGS[0].midi + f);
+		// Get the open string midi
+		const openMidi = STRINGS[selectedString].midi;
+		// Get the root note offset for the selected key
+		const keyOffset = NOTE_TO_SEMITONE[selectedKey] ?? 0;
+		// Find the lowest fret on this string that matches the selected key
+		// (so the root note is always >= open string)
+		let rootFret = 0;
+		while (((openMidi + rootFret) % 12) !== keyOffset && rootFret <= FRET_COUNT) {
+			rootFret++;
 		}
-		if (midiNotes.length) {
-			for (let i = 0; i < midiNotes.length; i++) {
-				setPlaying({ stringIdx: selectedString, fret: scaleFrets[i] });
-				bassRef.current.start({ note: midiNotes[i], velocity: 100 });
-				await new Promise((res) => setTimeout(res, 400));
-				setPlaying(null);
-			}
+		// Build the scale frets for the selected key
+		const scaleFrets = MAJOR_SCALE_INTERVALS.map(interval => rootFret + interval);
+		const midiNotes = scaleFrets.map(fret => openMidi + fret);
+		for (let i = 0; i < midiNotes.length; i++) {
+			setPlaying({ stringIdx: selectedString, fret: scaleFrets[i] });
+			bassRef.current.start({ note: midiNotes[i], velocity: 100 });
+			await new Promise((res) => setTimeout(res, 400));
+			setPlaying(null);
 		}
 	};
 
