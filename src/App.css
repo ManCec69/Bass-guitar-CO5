@@ -1,0 +1,105 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.fretboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+.fretboard {
+  overflow-x: auto;
+  background: #181818;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px #0008;
+  padding: 1.5rem 1rem;
+}
+table {
+  border-collapse: collapse;
+  min-width: 700px;
+}
+th, td {
+  border: 1px solid #444;
+  padding: 0.5em 1em;
+  text-align: center;
+  min-width: 48px;
+  font-size: 1.1em;
+}
+th {
+  background: #222;
+  color: #fff;
+}
+td.fret {
+  background: #292929;
+  color: #e0e0e0;
+  transition: background 0.2s;
+}
+td.selected-fret {
+  background: #3a6ea5;
+  color: #fff;
+  font-weight: bold;
+}
+td.active-fret {
+  background: #5a9e5a;
+  color: #fff;
+  font-weight: bold;
+}
+td.fret:hover {
+  background: #444;
+}
+tr td:first-child {
+  font-weight: bold;
+  background: #222;
+  color: #fff;
+}
+.loading {
+  margin-top: 1rem;
+  color: #aaa;
+  font-size: 1.1em;
+}
+td.playing-fret {
+  background: #d32f2f !important;
+  color: #fff !important;
+  font-weight: bold;
+  transition: background 0.1s;
+}
