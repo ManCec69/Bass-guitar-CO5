@@ -1,3 +1,48 @@
+# Bass Guitar Fretboard Demo
+
+This project demonstrates a 5-string bass guitar fretboard in React + TypeScript (Vite). You can visualize the fretboard, select a string, choose a key and scale, and play/hear the scale using realistic bass samples.
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v18 or newer recommended)
+- npm (v9 or newer recommended)
+
+### Installation
+
+1. Clone this repository or download the source code.
+2. Install dependencies:
+
+```sh
+npm install
+```
+
+### Running the App
+
+Start the development server:
+
+```sh
+npm run dev
+```
+
+Then open your browser to the local address shown in the terminal (usually http://localhost:5173/).
+
+### Features
+- Interactive 5-string bass fretboard (B, E, A, D, G)
+- 0th to 13th fret for each string
+- Click any fret to play the note
+- Select a string to highlight and enable scale playback
+- Choose key and scale (major/minor) from dropdowns
+- Play the scale for the selected string/key/scale, with real-time note highlighting
+
+### Project Structure
+- `src/App.tsx` – Main app logic and state
+- `src/Fretboard.tsx` – Fretboard table component
+- `src/Controls.tsx` – Key/scale controls and play button
+- `src/Fretboard.css` – Fretboard and table styles
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
