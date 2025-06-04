@@ -10,6 +10,9 @@ const STRINGS = [
 	{ name: 'B', midi: 47 },
 ];
 const FRET_COUNT = 13;
+const KEYS = [
+	'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'Fb', 'G', 'G#/Ab', 'A', 'A#', 'B'
+];
 
 function getNoteName(midi: number) {
 	const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -22,9 +25,9 @@ type BassInstrument = InstanceType<typeof Soundfont>;
 
 export default function App() {
 	const [audioReady, setAudioReady] = useState(false);
-	const [selected, setSelected] = useState<{ stringIdx: number; fret: number } | null>(null);
-	const [active, setActive] = useState<{ stringIdx: number; fret: number }[]>([]);
+	const [selectedString, setSelectedString] = useState<number | null>(null);
 	const [playing, setPlaying] = useState<{ stringIdx: number; fret: number } | null>(null);
+	const [selectedKey, setSelectedKey] = useState('C');
 	const audioCtxRef = useRef<AudioContext | null>(null);
 	const bassRef = useRef<BassInstrument | null>(null);
 
@@ -44,54 +47,44 @@ export default function App() {
 		audioCtxRef.current.resume();
 		const midi = STRINGS[stringIdx].midi + fret;
 		bassRef.current.start({ note: midi, velocity: 100 });
-		setSelected({ stringIdx, fret });
-		setActive((prev) => {
-			const exists = prev.some((a) => a.stringIdx === stringIdx && a.fret === fret);
-			if (exists) {
-				return prev.filter((a) => !(a.stringIdx === stringIdx && a.fret === fret));
-			} else {
-				return [...prev, { stringIdx, fret }];
-			}
-		});
+		// Only play the note, do not toggle selection
 	};
 
-	const isActive = (stringIdx: number, fret: number) =>
-		active.some((a) => a.stringIdx === stringIdx && a.fret === fret);
+	const handleStringClick = (stringIdx: number) => {
+		setSelectedString((prev) => (prev === stringIdx ? null : stringIdx));
+	};
 
 	// Play C major scale on B, E, A, D, or G string from fret 0
 	const playScale = async () => {
 		if (!audioReady || !bassRef.current || !audioCtxRef.current) return;
-		if (!selected) return;
-		const stringIdx = selected.stringIdx;
-		const fret = selected.fret;
-		if (fret !== 0) return;
+		if (selectedString === null) return;
 		await audioCtxRef.current.resume();
 		let scaleFrets: number[] = [];
 		let midiNotes: number[] = [];
-		if (stringIdx === 4) {
+		if (selectedString === 4) {
 			// B string: C3, D3, E3, F3, G3, A3, B3, C4
 			scaleFrets = [1, 3, 5, 6, 8, 10, 12, 13];
 			midiNotes = scaleFrets.map(f => STRINGS[4].midi + f);
-		} else if (stringIdx === 3) {
+		} else if (selectedString === 3) {
 			// E string: C4 (8), D4 (10), E4 (12), F4 (13), G3 (3), A3 (5), B3 (7), C4 (8)
 			scaleFrets = [8, 10, 12, 13, 3, 5, 7, 8];
 			midiNotes = scaleFrets.map(f => STRINGS[3].midi + f);
-		} else if (stringIdx === 2) {
+		} else if (selectedString === 2) {
 			// A string: C3 (3), D3 (5), E3 (7), F3 (8), G3 (10), A3 (12), B3 (14), C4 (15)
 			scaleFrets = [3, 5, 7, 8, 10, 12, 14, 15];
 			midiNotes = scaleFrets.map(f => STRINGS[2].midi + f);
-		} else if (stringIdx === 1) {
+		} else if (selectedString === 1) {
 			// D string: C4 (10), D4 (12), E4 (14), F4 (15), G4 (0), A4 (2), B4 (4), C5 (5)
 			scaleFrets = [10, 12, 14, 15, 0, 2, 4, 5];
 			midiNotes = scaleFrets.map(f => STRINGS[1].midi + f);
-		} else if (stringIdx === 0) {
+		} else if (selectedString === 0) {
 			// G string: C4 (5), D4 (7), E4 (9), F4 (10), G4 (0), A4 (2), B4 (4), C5 (5)
 			scaleFrets = [5, 7, 9, 10, 0, 2, 4, 5];
 			midiNotes = scaleFrets.map(f => STRINGS[0].midi + f);
 		}
 		if (midiNotes.length) {
 			for (let i = 0; i < midiNotes.length; i++) {
-				setPlaying({ stringIdx, fret: scaleFrets[i] });
+				setPlaying({ stringIdx: selectedString, fret: scaleFrets[i] });
 				bassRef.current.start({ note: midiNotes[i], velocity: 100 });
 				await new Promise((res) => setTimeout(res, 400));
 				setPlaying(null);
@@ -117,26 +110,25 @@ export default function App() {
 					</thead>
 					<tbody>
 						{STRINGS.map((string, stringIdx) => (
-							<tr key={string.name}>
-								<td>{string.name}</td>
+							<tr
+								key={string.name}
+								className={selectedString === stringIdx ? 'selected-row' : ''}
+							>
+								<td
+									className={selectedString === stringIdx ? 'selected-fret' : ''}
+									style={{ cursor: 'pointer' }}
+									onClick={() => handleStringClick(stringIdx)}
+								>
+									{string.name}
+								</td>
 								{[...Array(FRET_COUNT + 1)].map((_, fret) => {
 									const midi = string.midi + fret;
 									const note = getNoteName(midi);
-									const isSelected = selected && selected.stringIdx === stringIdx && selected.fret === fret;
-									const activeCell = isActive(stringIdx, fret);
 									const playingCell = isPlaying(stringIdx, fret);
 									return (
 										<td
 											key={fret}
-											className={
-												playingCell
-													? 'playing-fret'
-													: isSelected
-														? 'selected-fret'
-														: activeCell
-															? 'active-fret'
-															: 'fret'
-											}
+											className={playingCell ? 'playing-fret' : 'fret'}
 											onClick={() => handleFretClick(stringIdx, fret)}
 											style={{ cursor: audioReady ? 'pointer' : 'not-allowed' }}
 										>
@@ -150,10 +142,23 @@ export default function App() {
 				</table>
 				{!audioReady && <div className="loading">Loading bass samples...</div>}
 			</div>
+			<div style={{ marginTop: 24, marginBottom: 8 }}>
+				<label htmlFor="key-select" style={{ marginRight: 8 }}>Key:</label>
+				<select
+					id="key-select"
+					value={selectedKey}
+					onChange={e => setSelectedKey(e.target.value)}
+					style={{ fontSize: '1em', padding: '0.2em 0.5em' }}
+				>
+					{KEYS.map(key => (
+						<option key={key} value={key}>{key}</option>
+					))}
+				</select>
+			</div>
 			<button
-				style={{ marginTop: 24 }}
+				style={{ marginTop: 8 }}
 				onClick={playScale}
-				disabled={!(selected && selected.fret === 0)}
+				disabled={selectedString === null}
 			>
 				Play Scale
 			</button>

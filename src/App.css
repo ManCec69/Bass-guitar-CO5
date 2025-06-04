@@ -75,9 +75,10 @@ td.fret {
   transition: background 0.2s;
 }
 td.selected-fret {
-  background: #3a6ea5;
-  color: #fff;
+  background: #3a6ea5 !important;
+  color: #fff !important;
   font-weight: bold;
+  transition: background 0.2s;
 }
 td.active-fret {
   background: #5a9e5a;
@@ -102,4 +103,10 @@ td.playing-fret {
   color: #fff !important;
   font-weight: bold;
   transition: background 0.1s;
+}
+tr.selected-row td, tr.selected-row th {
+  background: #3a6ea5;
+  color: #fff !important;
+  font-weight: bold;
+  transition: background 0.2s;
 }
