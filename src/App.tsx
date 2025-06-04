@@ -16,6 +16,7 @@ const KEYS = [
 
 // Helper to get the C major scale intervals (in semitones)
 const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11, 12];
+const MINOR_SCALE_INTERVALS = [0, 2, 3, 5, 7, 8, 10, 12];
 const NOTE_TO_SEMITONE: Record<string, number> = {
 	'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'Fb': 4, 'G': 7, 'G#/Ab': 8, 'A': 9, 'A#': 10, 'B': 11
 };
@@ -29,11 +30,17 @@ function getNoteName(midi: number) {
 
 type BassInstrument = InstanceType<typeof Soundfont>;
 
+const SCALE_TYPES = [
+	{ label: 'Major', value: 'major' },
+	{ label: 'Minor', value: 'minor' },
+];
+
 export default function App() {
 	const [audioReady, setAudioReady] = useState(false);
 	const [selectedString, setSelectedString] = useState<number | null>(null);
 	const [playing, setPlaying] = useState<{ stringIdx: number; fret: number } | null>(null);
 	const [selectedKey, setSelectedKey] = useState('C');
+	const [selectedScale, setSelectedScale] = useState('major');
 	const audioCtxRef = useRef<AudioContext | null>(null);
 	const bassRef = useRef<BassInstrument | null>(null);
 
@@ -76,7 +83,8 @@ export default function App() {
 			rootFret++;
 		}
 		// Build the scale frets for the selected key
-		const scaleFrets = MAJOR_SCALE_INTERVALS.map(interval => rootFret + interval);
+		const scaleIntervals = selectedScale === 'major' ? MAJOR_SCALE_INTERVALS : MINOR_SCALE_INTERVALS;
+		const scaleFrets = scaleIntervals.map(interval => rootFret + interval);
 		const midiNotes = scaleFrets.map(fret => openMidi + fret);
 		for (let i = 0; i < midiNotes.length; i++) {
 			setPlaying({ stringIdx: selectedString, fret: scaleFrets[i] });
@@ -136,7 +144,7 @@ export default function App() {
 				</table>
 				{!audioReady && <div className="loading">Loading bass samples...</div>}
 			</div>
-			<div style={{ marginTop: 24, marginBottom: 8 }}>
+			<div style={{ marginTop: 24, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 16 }}>
 				<label htmlFor="key-select" style={{ marginRight: 8 }}>Key:</label>
 				<select
 					id="key-select"
@@ -146,6 +154,17 @@ export default function App() {
 				>
 					{KEYS.map(key => (
 						<option key={key} value={key}>{key}</option>
+					))}
+				</select>
+				<label htmlFor="scale-select" style={{ marginLeft: 8, marginRight: 8 }}>Scale:</label>
+				<select
+					id="scale-select"
+					value={selectedScale}
+					onChange={e => setSelectedScale(e.target.value)}
+					style={{ fontSize: '1em', padding: '0.2em 0.5em' }}
+				>
+					{SCALE_TYPES.map(scale => (
+						<option key={scale.value} value={scale.value}>{scale.label}</option>
 					))}
 				</select>
 			</div>
